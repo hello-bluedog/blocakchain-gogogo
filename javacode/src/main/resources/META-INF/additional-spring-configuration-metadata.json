@@ -1,0 +1,87 @@
+{"properties": [
+  {
+    "name": "certificatePath",
+    "type": "java.lang.String",
+    "description": "A description for 'certificatePath'"
+  },
+  {
+    "name": "privateKeyPath",
+    "type": "java.lang.String",
+    "description": "A description for 'privateKeyPath'"
+  },
+  {
+    "name": "networkConfigPath",
+    "type": "java.lang.String",
+    "description": "A description for 'networkConfigPath'"
+  },
+  {
+    "name": "walletDirectory",
+    "type": "java.lang.String",
+    "description": "A description for 'walletDirectory'"
+  },
+  {
+    "name": "fabric",
+    "type": "java.lang.String",
+    "description": "A description for 'fabric'"
+  },
+  {
+    "name": "mspid",
+    "type": "java.lang.String",
+    "description": "A description for 'mspid'"
+  },
+  {
+    "name": "username",
+    "type": "java.lang.String",
+    "description": "A description for 'username'"
+  },
+  {
+    "name": "channelName",
+    "type": "java.lang.String",
+    "description": "A description for 'channelName'"
+  },
+  {
+    "name": "contractName",
+    "type": "java.lang.String",
+    "description": "A description for 'contractName'"
+  },
+  {
+    "name": "Fabric.walletDirectory",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.walletDirectory'"
+  },
+  {
+    "name": "Fabric.networkConfigPath",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.networkConfigPath'"
+  },
+  {
+    "name": "Fabric.certificatePath",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.certificatePath'"
+  },
+  {
+    "name": "Fabric.privateKeyPath",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.privateKeyPath'"
+  },
+  {
+    "name": "Fabric.username",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.username'"
+  },
+  {
+    "name": "Fabric.channelName",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.channelName'"
+  },
+  {
+    "name": "Fabric.contractName",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.contractName'"
+  },
+  {
+    "name": "Fabric.mspid",
+    "type": "java.lang.String",
+    "description": "A description for 'Fabric.mspid'"
+  }
+]}

@@ -3,7 +3,7 @@ package com.dataSharing.entity.ledgerEntity;
 import lombok.Data;
 
 @Data
-public class cipherIndex {
+public class CipherIndex {
 	public String pkEnc;
 	public String pkUser;
 	public String roadName;
@@ -12,7 +12,7 @@ public class cipherIndex {
 	public boolean condition;
 	public boolean traffic;
 	public boolean averageSpeed;
-	public cipherIndex(String pkEnc, String pkUser, String roadName, Integer messageLevel, boolean weather,
+	public CipherIndex(String pkEnc, String pkUser, String roadName, Integer messageLevel, boolean weather,
 			boolean condition, boolean traffic, boolean averageSpeed) {
 		super();
 		this.pkEnc = pkEnc;
@@ -24,5 +24,5 @@ public class cipherIndex {
 		this.traffic = traffic;
 		this.averageSpeed = averageSpeed;
 	}
-	
+
 }
