@@ -1,6 +1,6 @@
 package sc
 
-import(
+import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -21,13 +21,18 @@ type CipherIndex struct{
     AverageSpeed string `json:"avarageSpeed"`
 }
 
+type Server struct {
+    ID         string `json:"id"`
+    SuccessNum int    `json:"success_num"`
+}
+
 type CoinAndCredit struct {
 	PkUser string `json:"pkUser"`
 	CoinNum string `json:"coinNum"`
     Credit string `json:"credit"`
+	IsRevoked bool  `json:"isrevoked"`
+	SuccessNum int `json:"count"`
 }
-
-
 
 func (s *CCC) Init(stub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success([]byte("success"))
@@ -49,8 +54,12 @@ func (s *CCC) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return s.QueryCoinNum(stub, args)
     } else if function == "QueryCredit" {
         return s.QueryCredit(stub, args)
-    }
-
+    } else if function == "changeStrategy" {
+		return s.changeStrategy(stub,args)
+	}else if function == "recordCommunication" {
+        return s.recordCommunication(stub, args)
+    }  
+	
 	// cipherIndex ledger
 	if function == "AppendNewMessage" {
 		return s.AppendNewMessage(stub, args)
