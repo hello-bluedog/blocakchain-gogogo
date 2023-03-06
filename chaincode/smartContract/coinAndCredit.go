@@ -164,6 +164,7 @@ func (s *CCC) UpdateCredit(stub shim.ChaincodeStubInterface, pkUser string,id st
 	if credit < rank {
 		tmp.IsRevoked =true
 	}
+	
 	cre:=strconv.FormatFloat(credit,'f',-1,64)
     tmp.Credit = cre
     itembytes, err = json.Marshal(tmp)
