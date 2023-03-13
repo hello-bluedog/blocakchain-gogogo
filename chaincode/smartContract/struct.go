@@ -21,17 +21,14 @@ type CipherIndex struct{
     AverageSpeed string `json:"avarageSpeed"`
 }
 
-type Server struct {
-    ID         string `json:"id"`
-    SuccessNum int    `json:"success_num"`
-}
-
-type CoinAndCredit struct {
+type Vehicle struct {
 	PkUser string `json:"pkUser"`
 	CoinNum string `json:"coinNum"`
     Credit string `json:"credit"`
-	IsRevoked bool  `json:"isrevoked"`
-	SuccessNum int `json:"count"`
+	Role string `json:"role"`
+	PingCount int64 `json:"pingCount"`
+	LastPing  int64 `json:"lastPing"`
+	Activity int64 `json:"avtivity"`
 }
 
 func (s *CCC) Init(stub shim.ChaincodeStubInterface) peer.Response {
@@ -41,11 +38,17 @@ func (s *CCC) Init(stub shim.ChaincodeStubInterface) peer.Response {
 func (s *CCC) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	function, args := stub.GetFunctionAndParameters()
 
+	vehicles := make(map[string]*Vehicle)
 	// coin/credit ledger
-	if function == "AddNewUserItem" {
-		return s.AddNewUserItem(stub, args)
-	} else if function == "UpdateCredit" {
-		return s.UpdateCredit(stub, args)
+	// if function == "AddNewUserItem" {    //替换为addvehicle
+	// 	return s.AddNewUserItem(stub, args)
+	// } 
+	if function == "AddVehicle" {    //有待商榷，默认初始化还是传参初始化
+		return s.AddVehicle(stub, args, vehicles)
+	} else if function == "Ping" {     //ping一下更新活跃度，
+        return s.Ping(stub, args, vehicles) 
+	} else if function == "UpdateCredit" { //交易完成后更新
+		// return s.UpdateCredit(stub, args)
 	} else if function == "UpdateCoinNum" {
 		return s.UpdateCoinNum(stub, args)
 	} else if function == "DeleteItem" {
@@ -54,10 +57,10 @@ func (s *CCC) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return s.QueryCoinNum(stub, args)
     } else if function == "QueryCredit" {
         return s.QueryCredit(stub, args)
-    } else if function == "changeStrategy" {
-		return s.changeStrategy(stub,args)
-	}else if function == "recordCommunication" {
-        return s.recordCommunication(stub, args)
+    // } else if function == "changeStrategy" {   //业务逻辑里面实现？
+	// 	return s.changeStrategy(stub,args)
+	// }else if function == "recordCommunication" {   //暂时不需要
+    //     return s.recordCommunication(stub, args)
     }  
 	
 	// cipherIndex ledger
