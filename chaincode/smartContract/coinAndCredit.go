@@ -3,6 +3,7 @@ package sc
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -10,44 +11,52 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer"
 )
 
-//访问控制的信誉度标准
-// var rank float64 =0.3
 
-func (s *CCC) AddVehicle(stub shim.ChaincodeStubInterface, args []string, vehicles map[string]*Vehicle) peer.Response {
+func (s *CCC) AddVehicle(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 1 {
         return shim.Error("Incorrect number of arguments. Expecting 1")
     }
 
     pkUser := args[0]
-    if _, exists := vehicles[pkUser]; exists {
-        return shim.Error(fmt.Sprintf("Vehicle with ID %s already exists", pkUser))
-    }
+	coinNumber := args[1]
+	credit := args[2]
+	role := args[3]
 
-    vehicle := &Vehicle{
+    vehicle := Vehicle{
     	PkUser:   pkUser,
-    	CoinNum:  "",
-    	Credit:   0,
-    	Role:     "",
+    	CoinNum:  coinNumber,
+    	Credit:   credit,
+    	Role:     role,
     	LastPing: time.Now().Unix(),
-    	Activity: 0,
+    	Activity: 0.0,
     }
 
-    // 将车辆信息加入map中
-    vehicles[pkUser] = vehicle
+	//车辆信息上传
+	itembytes, err := json.Marshal(vehicle)
+	if err != nil {
+		return shim.Error("json marshal shim.Error")
+	}
+	err = stub.PutState(pkUser, itembytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("PutState shim.Error: %s", err))
+	}
 
-    return shim.Success(nil)
+	return shim.Success([]byte("Add new user success"))
 }
 
-func (s *CCC) Ping(stub shim.ChaincodeStubInterface, args []string, vehicles map[string]*Vehicle) peer.Response {
+func (s *CCC) Ping(stub shim.ChaincodeStubInterface, args []string) peer.Response {
     if len(args) != 1 {
         return shim.Error("Incorrect number of arguments. Expecting 1")
     }
 
     pkUser := args[0]
-    vehicle, exists := vehicles[pkUser]
-    if !exists {
-        return shim.Error(fmt.Sprintf("Vehicle with pkUser %s does not exist", pkUser))
+	itembytes, err := stub.GetState(pkUser)
+    if(len(itembytes) == 0){
+        return shim.Error("no such user in ledger!!!")
     }
+    var vehicle Vehicle
+    _ = json.Unmarshal(itembytes, &vehicle)
+    
 
    // 更新 LastPing 和 PingCount 字段
    now := time.Now().Unix()
@@ -60,122 +69,21 @@ func (s *CCC) Ping(stub shim.ChaincodeStubInterface, args []string, vehicles map
    vehicle.LastPing = now
 
    // 计算活跃度
-   vehicle.Activity = vehicle.PingCount * int64(freq)
+   vehicle.Activity = float64(vehicle.PingCount) * freq
 
-   // 将更新后的车辆信息保存回map中
-   vehicles[pkUser] = vehicle
+   // 将更新后的车辆信息保存
+	itembytes,err = json.Marshal(vehicle)
+	if err != nil {
+		return shim.Error("json marshal shim.Error")
+	}
+	err = stub.PutState(pkUser, itembytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("PutState shim.Error: %s", err))
+	}
    
-   return shim.Success(nil)
+   return shim.Success([]byte("Ping success"))
 }
 
-// func(s *CCC) changeStrategy(stub shim.ChaincodeStubInterface, args []string) peer.Response{
-// 	pkUser := args[0]
-// 	if len(args) != 2 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 2")
-// 	}
-// 	//管理员权限检查
-// 	if pkUser !="admin" {
-// 		return shim.Error("Do not have the authority")
-// 	}
-// 	temp, err := strconv.ParseFloat(args[1], 64); 
-// 	if err != nil {
-// 		return shim.Error("Type miss matched. Expecting number ")
-// 	}
-// 	rank =float64(temp)
-// 	return shim.Success([]byte("update credit success"))
-// }
-
-// //一次的通信
-// func (s *CCC) recordCommunication(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-//     if len(args) != 3 {
-//         return shim.Error("Incorrect number of arguments. Expecting 3")
-//     }
-//     vehicleID := args[0]
-//     serverID := args[1]
-//     success := args[2]
-
-//     vehicleBytes, err := APIstub.GetState(vehicleID)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-//     if vehicleBytes == nil {
-//         return shim.Error("Vehicle not found")
-//     }
-//     var vehicle CoinAndCredit
-//     err = json.Unmarshal(vehicleBytes, &vehicle)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-
-//     serverBytes, err := APIstub.GetState(serverID)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-//     if serverBytes == nil {
-//         return shim.Error("Server not found")
-//     }
-//     var server Server
-//     err = json.Unmarshal(serverBytes, &server)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-// 	//通讯成功
-//     if success == "true" {
-//         vehicle.SuccessNum++
-//         server.SuccessNum++
-//     }
-
-//     vehicleBytes, err = json.Marshal(vehicle)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-//     err = APIstub.PutState(vehicleID, vehicleBytes)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-
-//     serverBytes, err = json.Marshal(server)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-//     err = APIstub.PutState(serverID, serverBytes)
-//     if err != nil {
-//         return shim.Error(err.Error())
-//     }
-
-//     return shim.Success(nil)
-// }
-
-	//替换为addvehicle
-// func (s *CCC) AddNewUserItem(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-// 	if len(args) != 3 {
-// 		return shim.Error("Incorrect number of arguments. Expecting 3")
-// 	}
-// 	pkUser := args[0]
-//     coinNum := args[1]
-//     credit := args[2]
-
-// 	IsExist := s.FeelExist(stub, pkUser)
-// 	if (IsExist == "Yes") {
-// 		return shim.Error("user has existed, please use the modify function")
-// 	}
-
-// 	newItem := CoinAndCredit{
-//         PkUser: pkUser,
-//         CoinNum: coinNum,
-//         Credit: credit,
-// 	}
-// 	itembytes, err := json.Marshal(newItem)
-// 	if err != nil {
-// 		return shim.Error("json marshal shim.Error")
-// 	}
-// 	err = stub.PutState(pkUser, itembytes)
-// 	if err != nil {
-// 		return shim.Error(fmt.Sprintf("PutState shim.Error: %s", err))
-// 	}
-
-// 	return shim.Success([]byte("Add new user success"))
-// }
 
 func (s *CCC) UpdateCredit(stub shim.ChaincodeStubInterface, args[]string) peer.Response {
 	if len(args) != 2 {
@@ -188,49 +96,92 @@ func (s *CCC) UpdateCredit(stub shim.ChaincodeStubInterface, args[]string) peer.
     if(len(itembytes) == 0){
         return shim.Error("no such user in ledger!!!")
     }
-    var tmp CoinAndCredit
-    _ = json.Unmarshal(itembytes, &tmp)
+    var myVehicle Vehicle
+    _ = json.Unmarshal(itembytes, &myVehicle)
+	
 	//历史信誉
-	var his_credit float64
-	his_credit,err = strconv.ParseFloat(tmp.Credit, 64)
-	if err != nil {
-		return shim.Error("json marshal shim.Error")
+	var totalCredit float64
+    var weightTotal float64
+    var currentTimestamp = time.Now().Unix()
+
+    historyIter, err := stub.GetHistoryForKey(pkUser)
+    if err != nil {
+        return shim.Error("failed to get history for pkUser")
+    }
+    defer historyIter.Close()
+
+	for historyIter.HasNext() {
+		historicValue, err := historyIter.Next()
+		if err != nil {
+			return shim.Error("failed to get next history value for pkUser")
+		}
+	
+		var vehicle Vehicle
+		err = json.Unmarshal(historicValue.Value, &vehicle)
+		if err != nil {
+			return shim.Error("failed to unmarshal historic vehicle value for pkUser")
+		}
+	
+		historicCredit, err := strconv.ParseFloat(vehicle.Credit, 64)
+		if err != nil {
+			return shim.Error("failed to parse historic vehicle credit for pkUser")
+		}
+	
+		// historicTimestamp := historicValue.Timestamp.Seconds * 1e9 + int64(historicValue.Timestamp.Nanos)
+		historicTimestamp := vehicle.LastPing
+		// 计算时间差，并计算权重系数
+		timeDelta := currentTimestamp - historicTimestamp
+		decayRate := 0.001
+    	secondsInYear := 31536000.0 // 秒数
+    	weight := math.Exp(-float64(timeDelta) * decayRate / secondsInYear)
+	
+		// 计算加权信誉度
+		weightedCredit := historicCredit * weight
+	
+		// 将加权信誉度加入总和中
+		totalCredit += weightedCredit
+	
+		// 统计历史版本数
+		weightTotal++
 	}
+	
+	// 计算平均信誉度
+	his_credit := totalCredit / float64(weightTotal)
+	if his_credit >100.0 {
+		his_credit =100.0
+	}
+
 	//通信信誉
 	var commu_credit float64
-	var server Server
-	item_server, err := stub.GetState(id)
-	_ = json.Unmarshal(item_server, &server)
-	commu_credit= float64(tmp.SuccessNum)/float64(server.SuccessNum)
+	if myVehicle.Activity>100.0 {
+		commu_credit = 100.0
+	} else {
+		commu_credit = myVehicle.Activity
+	}
+
+	var final_credit float64
+	final_credit = his_credit*0.58 + commu_credit*0.4
+	
 	//行为信誉
-	switch actionType {
-    case "view":
-        his_credit += 1.0
-    case "upload":
-        his_credit += 2.0
-    case "violation":
-        his_credit -= 5.0
+	switch action {
+    case "1":
+        final_credit += 1.0
+    case "2":
+        final_credit += 2.0
+    case "3":
+        final_credit -= 5.0
     default:
         return shim.Error("unknown action type")
     }
 
-	var credit float64
-	credit=his_credit + commu_credit
-	//防止越界
-	if credit > 100 {
-		credit=100
+	if final_credit > 100.0 {
+		final_credit = 100.0
+	}else if final_credit <0.0 {
+		final_credit =0.0
 	}
-	if credit <0  {
-		credit =0
-	}
-		//注销
-	if credit < rank {
-		tmp.IsRevoked =true
-	}
-	
-	cre:=strconv.FormatFloat(credit,'f',-1,64)
-    tmp.Credit = cre
-    itembytes, err = json.Marshal(tmp)
+
+	myVehicle.Credit=strconv.FormatFloat(final_credit,'f',2,64)
+    itembytes, err = json.Marshal(myVehicle)
 	if err != nil {
 		return shim.Error("json marshal shim.Error")
 	}
@@ -331,6 +282,7 @@ func (s * CCC)ChangeRole(stub shim.ChaincodeStubInterface, args []string) peer.R
 
 	return shim.Success([]byte("update role success"))
 }
+
 
 
 /*func (s * CCC)FeelExist(stub shim.ChaincodeStubInterface, target string) string {
