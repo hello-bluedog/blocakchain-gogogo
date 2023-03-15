@@ -69,7 +69,6 @@ public class fabricService {
 	   		System.out.println("An identity for the admin user \"admin\" already exists in the wallet");
 	        return false;
 		}
-
 	    // Enroll the admin user, and import the new identity into the wallet.
 	    final EnrollmentRequest enrollmentRequestTLS = new EnrollmentRequest();
 	    enrollmentRequestTLS.addHost("localhost");
@@ -77,14 +76,8 @@ public class fabricService {
 	    // 进行注册，得到注册结果
 	    Enrollment enrollment = caClient.enroll(this.adminName, this.adminPW, enrollmentRequestTLS);
 	    // 利用注册结果生成新的证书
-
-
-		//Identity user = Identities.newX509Identity("Org1MSP", enrollment);
-		
-		IdemixEnrollment idemixEnrollment = caClient.idemixEnroll(enrollment, "idemixMSPID1");
-		Identity user = Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
-		
-	    
+	    IdemixEnrollment idemixEnrollment = caClient.idemixEnroll(enrollment, "idemixMSPID1");
+	    Identity user = Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
 	    // 把证书加入钱包中
 	    wallet.put("admin", user);
 	    System.out.println("Successfully enrolled user \"admin\" and imported it into the wallet");
@@ -153,9 +146,9 @@ public class fabricService {
 		    String enrollmentSecret = caClient.register(registrationRequest, admin);
 		    System.out.println(enrollmentSecret);
 		    Enrollment enrollment = caClient.enroll(username, enrollmentSecret);
-			IdemixEnrollment idemixEnrollment = caClient.idemixEnroll(enrollment, "idemixMSPID1");
-			X509Identity user = Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
-		    // X509Identity user = Identities.newX509Identity("Org1MSP", enrollment);
+		    IdemixEnrollment idemixEnrollment = caClient.idemixEnroll(enrollment, "idemixMSPID1");
+		    X509Identity user = Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
+		    
 		    wallet.put(username, user);
 		    System.out.println("Successfully enrolled user \"appUser\" and imported it into the wallet");
 		    return true;
