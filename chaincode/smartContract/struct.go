@@ -21,7 +21,7 @@ type CipherIndex struct{
     AverageSpeed string `json:"avarageSpeed"`
 }
 
-type Vehicle struct {
+type CoinNumAndCredit struct {
 	PkUser string `json:"pkUser"`
 	CoinNum string `json:"coinNum"`
     Credit string `json:"credit"`

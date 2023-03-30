@@ -22,7 +22,7 @@ func (s *CCC) AddVehicle(stub shim.ChaincodeStubInterface, args []string) peer.R
 	credit := args[2]
 	role := args[3]
 
-    vehicle := Vehicle{
+    vehicle := CoinNumAndCredit{
     	PkUser:   pkUser,
     	CoinNum:  coinNumber,
     	Credit:   credit,
@@ -54,7 +54,7 @@ func (s *CCC) Ping(stub shim.ChaincodeStubInterface, args []string) peer.Respons
     if(len(itembytes) == 0){
         return shim.Error("no such user in ledger!!!")
     }
-    var vehicle Vehicle
+    var vehicle CoinNumAndCredit
     _ = json.Unmarshal(itembytes, &vehicle)
     
 
@@ -96,7 +96,7 @@ func (s *CCC) UpdateCredit(stub shim.ChaincodeStubInterface, args[]string) peer.
     if(len(itembytes) == 0){
         return shim.Error("no such user in ledger!!!")
     }
-    var myVehicle Vehicle
+    var myVehicle CoinNumAndCredit
     _ = json.Unmarshal(itembytes, &myVehicle)
 	
 	//历史信誉
@@ -116,7 +116,7 @@ func (s *CCC) UpdateCredit(stub shim.ChaincodeStubInterface, args[]string) peer.
 			return shim.Error("failed to get next history value for pkUser")
 		}
 	
-		var vehicle Vehicle
+		var vehicle CoinNumAndCredit
 		err = json.Unmarshal(historicValue.Value, &vehicle)
 		if err != nil {
 			return shim.Error("failed to unmarshal historic vehicle value for pkUser")
@@ -201,7 +201,7 @@ func (s *CCC) UpdateCoinNum(stub shim.ChaincodeStubInterface, args []string) pee
     if(len(itembytes) == 0){
         return shim.Error("no such user in ledger!!!")
     }
-    var tmp Vehicle
+    var tmp CoinNumAndCredit
     _ = json.Unmarshal(itembytes, &tmp)
     tmp.CoinNum = coinNum
     itembytes, err := json.Marshal(tmp)
@@ -241,7 +241,7 @@ func (s * CCC) QueryCoinNum(stub shim.ChaincodeStubInterface, args []string) pee
     if(len(itemBytes) == 0) {
         return shim.Error("no such user in ledger!")
     }
-    var coinAndCredit Vehicle
+    var coinAndCredit CoinNumAndCredit
     _ = json.Unmarshal(itemBytes, &coinAndCredit)
     return shim.Success([]byte(coinAndCredit.CoinNum))
 }
@@ -255,7 +255,7 @@ func (s * CCC) QueryCredit(stub shim.ChaincodeStubInterface, args []string) peer
     if(len(itemBytes) == 0) {
         return shim.Error("no such user in ledger!")
     }
-    var coinAndCredit Vehicle
+    var coinAndCredit CoinNumAndCredit
     _ = json.Unmarshal(itemBytes, &coinAndCredit)
     return shim.Success([]byte(coinAndCredit.Credit))
 }
@@ -271,7 +271,7 @@ func (s * CCC)ChangeRole(stub shim.ChaincodeStubInterface, args []string) peer.R
     if(len(itembytes) == 0){
         return shim.Error("no such user in ledger!!!")
     }
-    var tmp Vehicle
+    var tmp CoinNumAndCredit
     _ = json.Unmarshal(itembytes, &tmp)
     tmp.Role = role
     itembytes, err = json.Marshal(tmp)
