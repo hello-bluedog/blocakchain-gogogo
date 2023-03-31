@@ -1,5 +1,6 @@
 package com.dataSharing.service;
-
+import java.io.*;
+import java.util.Date;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +27,7 @@ import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallets;
 import org.hyperledger.fabric.gateway.X509Identity;
+import org.hyperledger.fabric.protos.idemix.Idemix.CredentialRevocationInformation;
 import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.User;
@@ -50,10 +52,10 @@ public class FabricService {
 	private static String contractName = "basic";
 	public static Network network;
 
-
 	public FabricService() throws Exception {
 		//createAdmin();
-	    createUser("ljh000");
+		//login();
+	    createUser("102");
 		//login();
 	}
 
@@ -103,71 +105,6 @@ public class FabricService {
 	    System.out.println("Successfully enrolled user \"admin\" and imported it into the wallet");
 	    return true;
 	}
-/* 
-	public class IdemixEnrollmentSerialized implements Enrollment {
-
-	    private static final String algo = "idemix";
-
-	    protected final String ipkSerializedString;
-	    protected final String revocationPkSerializedString;
-	    protected final String mspId;
-	    protected final String skSerializedString;
-	    protected final String credentialSerializedString;
-	    protected final String criSerializedString;
-	    protected final String ou;
-	    protected final String roleMask;
-
-	    public IdemixEnrollmentSerialized(String ipkSerializedString, String revocationPkSerializedString, String mspId, String skSerializedString, String credentialSerializedString, String criSerializedString, String ou, String roleMask) {
-	        this.ipkSerializedString = ipkSerializedString;
-	        this.revocationPkSerializedString = revocationPkSerializedString;
-	        this.mspId = mspId;
-	        this.skSerializedString = skSerializedString;
-	        this.credentialSerializedString = credentialSerializedString;
-	        this.criSerializedString = criSerializedString;
-	        this.ou = ou;
-	        this.roleMask = roleMask;
-	    }
-
-	    public PrivateKey getKey() {
-	        return null;
-	    }
-
-	    public String getCert() {
-	        return null;
-	    }
-
-	    public String getIpk() {
-	        return this.ipkSerializedString;
-	    }
-
-	    public String getRevocationPk() {
-	        return this.revocationPkSerializedString;
-	    }
-
-	    public String getMspId() {
-	        return this.mspId;
-	    }
-
-	    public String getSk() {
-	        return this.skSerializedString;
-	    }
-
-	    public String getCred() {
-	        return this.credentialSerializedString;
-	    }
-
-	    public String getCri() {
-	        return this.criSerializedString;
-	    }
-
-	    public String getOu() {
-	        return this.ou;
-	    }
-
-	    public String getRoleMask() {
-	        return this.roleMask;
-	    }
-	}*/
 	public static boolean createUser(String username) throws Exception {
 
 		    HFCAClient caClient = getCaclient();
@@ -229,25 +166,20 @@ public class FabricService {
 		    System.out.println(enrollmentSecret);
 		    Enrollment enrollment = caClient.enroll(username, enrollmentSecret);
 
-
-			IdemixEnrollment idemixEnrollment =  (IdemixEnrollment) caClient.idemixEnroll(enrollment, "Org1IdemixMSP");
-
-			//IdemixEnrollmentSerialized idemixEnrollment =  (IdemixEnrollmentSerialized) caClient.idemixEnroll(enrollment, "Org1IdemixMSP");
-			System.out.println("\nIdemix Enrollment IPK: " + idemixEnrollment.getIpk());
-			System.out.println("\nIdemix enrollment MSP: " + idemixEnrollment.getMspId());
+			IdemixEnrollment idemixEnrollment =  (IdemixEnrollment) (caClient).idemixEnroll(enrollment, "Org1IdemixMSP");
+			String org1idemix="{--Idemix enrollment MSP: " + idemixEnrollment.getMspId().toString()+"\nIdemix enrollment CRED: " + idemixEnrollment.getCred().toString()+"\nIdemix Enrollment IdemixIssuerPublicKey: " + idemixEnrollment.getIpk().toString()+"\nIdemix enrollment Sk:"+idemixEnrollment.getSk().toString()+"\nIdemix enrollment getRevocationPk:"+idemixEnrollment.getRevocationPk().toString()+"\nIdemix enrollment CredentialRevocationInformation:"+idemixEnrollment.getCri().toString()+"\nIdemix enrollment Ou:"+idemixEnrollment.getOu().toString()+"\nIdemix enrollment RoleMask:"+idemixEnrollment.getRoleMask()+"--}";
 			Identity user = Identities.newX509Identity("Org1MSP", enrollment);
 			wallet.put(username, user);
-			Identity id =  Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
-			wallet.put(username + "Idemix", id);
 			System.out.println("Successfully enrolled user " + username + " and imported it into the wallet");
+			//Identity useridemix =  Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
+			//wallet.put(username + "Idemix", useridemix);
+			ObjectOutputStream oos = new ObjectOutputStream(
+					new FileOutputStream(username+"_idemix.id"));
+			// 序列化对象
+			oos.writeObject(org1idemix);
+			oos.close();
+			System.out.println("Successfully enrolled user " + username + " Idemix and imported it into the wallet");
 			
-/*	        X509Identity user = Identities.newX509Identity("Org1MSP", enrollment);
-		    IdemixEnrollment idemixEnrollment = (IdemixEnrollment) caClient.idemixEnroll(enrollment, "idemixMSPID1");
-		    Identity useridemix = Identities.newX509Identity("Org1IdemixMSP", idemixEnrollment);
-	        wallet.put(username, user);
-		    wallet.put(username + "idemix", useridemix);
-	        System.out.println("Successfully enrolled user \"appUser\" and imported it into the wallet");
-	        */
 		    return true;
 		}
 	 /**
